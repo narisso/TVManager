@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  tvr_id: 1
+  name: MyString
+  status: 1
+
+two:
+  tvr_id: 1
+  name: MyString
+  status: 1

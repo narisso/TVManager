@@ -1,0 +1,96 @@
+<%- model_class = Show -%>
+<div class="page-header">
+  <h1><%=t '.title', :default => @show.name %></h1>
+</div>
+
+<div class="thumbnails">
+  <div class="span4">
+    <a href=<%= @show.image_url %> class="thumbnail" >
+      <img style="width: auto; height: 200px;" src=<%= @show.image_url %> >
+    </a>
+  </div>
+
+<ul class="nav nav-pills nav-stacked span2">
+  
+  <% @show_info.genres.each do |genre| %>
+    <li class="active">
+      <a class="text-center"><%= genre %></a>
+    </li>
+  <% end %>
+
+</ul>
+</div>
+
+<div class="thumbnails">
+<dl class="dl-horizontal">
+  <dt><strong><%= model_class.human_attribute_name(:name) %>:</strong></dt>
+  <dd><%= @show.name %></dd>
+  <dt><strong><%= "Tvr"  %>:</strong></dt>
+  <dd><%= @show.tvr_id or "Not found" %></dd>
+  <dt><strong><%= "Tvdb"  %>:</strong></dt>
+  <dd><%= @show.tvdb_id or "Not found" %></dd>
+  <dt><strong><%= "Imdb"  %>:</strong></dt>
+  <dd><%= @show.imdb_id or "Not found"%></dd>
+  <dt><strong><%= model_class.human_attribute_name(:status)  %>:</strong></dt>
+  <dd><%= @show.status_string %></dd>
+  <dt><strong><%= model_class.human_attribute_name(:country)  %>:</strong></dt>
+  <dd><%= @show.country %></dd>
+  <dt><strong><%= "Aired"  %>:</strong></dt>
+  <dd><%= @show_info.started.to_s %></dd>
+</dl>
+</div>
+
+<div class="accordion" id="accordion2">
+
+  <% last_ep = @show_info.get_lastEpisode %>
+  <% @show_info.seasons.each do |num , episodes| %>
+
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href= <%= "#collapse"+num.to_s %> >
+        <%= 'Season '+num.to_s %>
+      </a>
+    </div>
+    <div id=<%= "collapse"+num.to_s %> class="accordion-body collapse" style="height: 0px; ">
+      <div class="accordion-inner">
+
+        <table class="table table-hover">
+        
+        <tbody>
+          <% episodes.each do |episode| %>
+            <% caca = last_ep == episode %>
+            <% if caca %>
+              <tr class="success">
+            <% elsif episode.isOld? %>
+              <tr class="error">
+            <% else %>
+              <tr>
+            <% end %>
+
+              <td><%= episode.title %></td>
+              <td><%= episode.get_episodeNumber %></td>
+              <td><%= Time.zone %></td>
+              <td><%= episode.get_airdate(Time.zone).asctime %></td>
+            
+              <% if caca %>
+                <td><%= button_to "Last episode", "", :method => :get, :form_class => 'form-horizontal', :class => 'btn btn-success' %> </td>              
+              <% elsif episode.isOld? %>                
+                <td><%= button_to "Old episode", "", :method => :get, :form_class => 'form-horizontal', :class => 'btn btn-danger' %> </td>
+              <%else%>                
+                <td><%= button_to "Not aired Yet", "", :method => :get, :form_class => 'form-horizontal', :class => 'btn btn-info' %> </td>
+              <%end%>
+
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      </div>
+    </div>
+  </div>
+
+  <% end %>
+
+</div>
+
+
