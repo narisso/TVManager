@@ -27,13 +27,60 @@ class ShowsController < ApplicationController
   def show
     @show = Show.find(params[:id])
 
-    #API REQUEST
-    @show_info = @show.load_tvr_details
-
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @show }
     end
+  end
+
+  #GET /shows/1/imdb_info
+  #GET /shows/1/imdb_info.json
+  def imdb_info
+    @show = Show.find(params[:id])
+    @imdb_info = @show.load_imdb_details
+
+    if @imdb_info.nil? then 
+      @imdb_info = {} 
+    end
+
+    respond_to do |format|
+      #format.json { render json: @imdb_info }
+      format.html { render :partial => 'imdb_info' }
+    end  
+  end
+
+  #GET /shows/1/imdb_info
+  def tvr_info
+    @show = Show.find(params[:id])
+    @show_info = @show.load_tvr_details
+
+    if @show_info.nil? then 
+      @show_info = TvrInfo.new() 
+    end
+
+    respond_to do |format|
+      format.html { render :partial => 'tvr_info' }
+    end
+  end
+
+  #get /shows/1/download
+  def download
+    @show = Show.find(params[:id])
+
+    season = params[:s]
+    episode = params[:e]
+
+    @downString =  @show.get_download_string(season , episode)
+
+    api = ThePirateBay.new
+
+    @torrents = api.torrents.search(@downString)
+    @firstTorrent = @torrents[0]
+
+    respond_to do |format|
+      format.html # download.html.erb
+    end
+
   end
 
   # GET /shows/new
@@ -50,6 +97,7 @@ class ShowsController < ApplicationController
 
   # GET /shows/1/edit
   def edit
+  
     @show = Show.find(params[:id])
   end
 

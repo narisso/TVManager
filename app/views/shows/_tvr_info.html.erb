@@ -1,0 +1,98 @@
+<div>
+<div id="genres_info">
+  <ul class="nav nav-pills nav-stacked span2">   
+      <% @show_info.genres.each do |genre| %>
+        <li class="active">
+          <a class="text-center"><%= genre %></a>
+        </li>
+      <% end %>  
+  </ul>
+</div>
+
+<div class="thumbnails" id="general_info">
+  <dl class="dl-horizontal">
+    <dt><strong><%= "Name"%>:</strong></dt>
+    <dd><%= @show.name %></dd>
+    <dt><strong><%= "Tvr"  %>:</strong></dt>
+    <dd><%= @show.tvr_id or "Not found" %></dd>
+    <dt><strong><%= "Tvdb"  %>:</strong></dt>
+    <dd><%= @show.tvdb_id or "Not found" %></dd>
+    <dt><strong><%= "Imdb"  %>:</strong></dt>
+    <dd><%= @show.imdb_id or "Not found"%></dd>
+    <dt><strong><%= "Status"  %>:</strong></dt>
+    <dd><%= @show.status_string %></dd>
+    <dt><strong><%= "Country"  %>:</strong></dt>
+    <dd><%= @show.country %></dd>
+    <dt><strong><%= "Aired"  %>:</strong></dt>
+    <dd><%= @show_info.started.to_s %></dd>
+  </dl>
+</div>
+
+<div class="accordion" id="episodes_info">
+
+  <% last_ep = @show_info.get_lastEpisode %>
+  <% @show_info.seasons.each do |num , episodes| %>
+
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#episodes" href= <%= "#collapse"+num.to_s %> >
+        <%= 'Season '+num.to_s %>
+      </a>
+    </div>
+    <div id=<%= "collapse"+num.to_s %> class="accordion-body collapse" style="height: 0px; ">
+      <div class="accordion-inner">
+
+        <table class="table table-hover">
+        
+        <tbody>
+          <% episodes.each do |episode| %>
+            <% caca = last_ep == episode %>
+            <% if caca %>
+              <tr class="success">
+            <% elsif episode.isOld? %>
+              <tr class="error">
+            <% else %>
+              <tr>
+            <% end %>
+
+            <% years =  ( (Time.zone.now - episode.get_airdate(Time.zone)).to_i / 1.year ).to_i%>
+            <% days =  ( (Time.zone.now - episode.get_airdate(Time.zone)).to_i / 1.day )%>
+            <% weeks =  ( (Time.zone.now - episode.get_airdate(Time.zone)).to_i / 1.week )%>
+            <%
+                string ="Aired "+weeks.to_s+" weeks ago"
+                if years >= 1 then string="Aired " +years.to_s + " years ago" end
+                if weeks <= 1 then string="Aired " +days.to_s + " days ago" end
+                if days <=0 then string="Will air in " +(days*-1).to_s + " days" end
+                if years >= 1000 or years <= -1000 then string = "TBA" end
+
+              %>
+
+            <td><%= episode.title %></td>
+            <td><%= episode.get_episodeNumber %></td>
+            <td><%= string%></td>
+            <td><%= episode.get_airdate(Time.zone).strftime("%d-%m-%Y %H:%M") %></td>
+          
+            <% if caca %>
+              <td><%= link_to "Last episode", "", :method => :get, :form_class => 'form-horizontal', :class => 'btn btn-success' %> </td>              
+            <% elsif episode.isOld? %>                
+              <td><%= link_to "Old episode", "", :method => :get, :form_class => 'form-horizontal', :class => 'btn btn-danger' %> </td>
+            <%else%>                
+              <td><%= link_to "Not aired Yet", "", :method => :get, :form_class => 'form-horizontal', :class => 'btn btn-info' %> </td>
+            <%end%>
+
+            <td><%= link_to "Download", {:action => "download",  :s => episode.season, :e => episode.number}, {:method => :get, :form_class => 'form-horizontal', :class => 'btn btn-success'}  %></td>
+
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      </div>
+    </div>
+  </div>
+
+  <% end %>
+
+</div>
+
+</div>

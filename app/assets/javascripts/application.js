@@ -48,4 +48,4 @@ $(function() {
                 .append( "<a>" + item.name + "</a>" )
                 .appendTo( ul );
         };
-    });
+});

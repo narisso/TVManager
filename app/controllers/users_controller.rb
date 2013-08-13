@@ -10,6 +10,22 @@ class UsersController < ApplicationController
     end
   end
 
+
+  #PUT /user/1/add_show
+  def add_show
+    if current_user.nil?
+      redirect_to new_user_session_path, notice: 'Please sign in first'
+      return
+    else
+      show = Show.find(params[:id])
+      currrent_user.shows << show
+      currrent_user.save
+      redirect_to show_path(show)
+      return
+    end
+
+  end
+
   # GET /users/1
   # GET /users/1.json
   def show

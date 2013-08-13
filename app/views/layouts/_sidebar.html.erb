@@ -1,0 +1,16 @@
+<div class="well sidebar-nav">
+
+<%if user_signed_in?%>
+  <h3>Your Shows</h3>
+  <ul class="nav nav-list">
+    <li class="nav-header">Latest</li>
+    <li class="nav-header">All</li>
+    <% current_user.shows.each do |show|%>
+    <li><%= link_to show.name, show_path(show)  %></li>
+    <%end%>
+  </ul>
+<%else%>
+  <%= link_to "Sign in", new_user_session_path  %>
+<%end%>
+
+</div>

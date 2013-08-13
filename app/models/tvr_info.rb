@@ -19,7 +19,16 @@ class TvrInfo
 					:timezone,
 					:seasons
 
-	def initialize(xml)
+	def initialize(*args)
+		case args.size
+		when 1
+			load_xml args[0]
+		else
+      		load_empty
+		end
+	end
+
+	def load_xml(xml)
 		@name = xml.xpath('name').inner_text
 		@totalseasons = xml.xpath('totalseasons').inner_text.to_i
 		@showid = xml.xpath('showid').inner_text.to_i
@@ -59,7 +68,30 @@ class TvrInfo
 
 				@seasons[season.attr('no').to_i] = episodes
 		end
+	end
 
+	def load_empty
+		@name = ""
+		@totalseasons = 0
+		@showid = -1
+		@showlink = ""
+		@started = ""
+		@ended = ""
+		@image = ""
+		@origin_country = ""
+		@status = ""
+		@classification = ""
+
+		@genres = []
+
+		@runtime = ""
+		@network = ""
+
+		@airtime = ""
+		@airday = ""
+		@timezone = 'GMT-5 +DST'
+
+		@seasons = {}
 	end
 
 	def get_lastEpisode

@@ -4,6 +4,9 @@ class Show < ActiveRecord::Base
 
   validates_uniqueness_of :tvr_id
 
+  has_many :user_favourites
+  has_many :users, :through => :user_favourites
+
   def self.load_tvr_feed
 
   	puts 'START  REQUEST'
@@ -272,21 +275,37 @@ class Show < ActiveRecord::Base
     require_dependency 'tvr_info'
     require_dependency 'episode'
 
-    Rails.cache.fetch("/show/#{self.tvr_id}/tvr_info", :expires_in => 6.hours) do
-    
-      self.tvr_api_details (3)
+    details = nil
+
+    details = Rails.cache.fetch("/show/#{self.tvr_id}/tvr_info", :expires_in => 6.hours) do
+       
+      details = self.tvr_api_details (3)
     
     end
+
+    if details.nil?
+      Rails.cache.delete("/show/#{self.tvr_id}/tvr_info") 
+    end
+
+    return details
 
   end
 
   def load_imdb_details
 
-    Rails.cache.fetch("/show/#{self.tvr_id}/imdb_info", :expires_in => 6.hours) do
+    details = nil
+
+    details=Rails.cache.fetch("/show/#{self.tvr_id}/imdb_info", :expires_in => 6.hours) do
     
-      self.imdb_api_details (3)
+      details = self.imdb_api_details (3)
     
     end
+
+    if details.nil?
+      Rails.cache.delete("/show/#{self.tvr_id}/imdb_info") 
+    end
+
+    return details
 
   end
 
@@ -342,6 +361,7 @@ class Show < ActiveRecord::Base
 
   end
 
+  #FROM OMDB
   def imdb_api_details(retry_num)
 
     if retry_num < 0 then return nil end
@@ -362,7 +382,7 @@ class Show < ActiveRecord::Base
 
     rescue Exception => e
       puts "Error: "+e.message+" Retries: "+retry_num.to_s
-      Rails.logger.debug(e.message)
+      #Rails.logger.debug("Error: "+e.message+" Retries: "+retry_num.to_s)
       return self.imdb_api_details(retry_num - 1)
     end
 
@@ -375,6 +395,8 @@ class Show < ActiveRecord::Base
     if retry_num < 0 then return nil end
 
     begin
+      puts "TVDB Request : " + self.name + " " + self.tvdb_detail_url(name)
+
       response = HTTParty.get( self.tvdb_detail_url(name) ) 
       body = response.body
       doc = Nokogiri::XML(body)
@@ -392,7 +414,7 @@ class Show < ActiveRecord::Base
 
     rescue Exception => e
       puts "Error: "+e.message+" Retries: "+retry_num.to_s
-      Rails.logger.debug(retry_num.to_s + " : " + e.message)
+      #Rails.logger.debug("Error: "+e.message+" Retries: "+retry_num.to_s)
       return self.tvdb_api_details(retry_num - 1,name)
     end
 
@@ -403,6 +425,8 @@ class Show < ActiveRecord::Base
     if retry_num < 0 then return nil end
 
     begin
+      puts "TVR Request : " + self.name + " " + self.tvr_detail_url
+
       response = HTTParty.get( self.tvr_detail_url )
       body = response.body
       doc = Nokogiri::XML(body)
@@ -419,7 +443,7 @@ class Show < ActiveRecord::Base
 
     rescue Exception => e
       puts "Error: "+e.message+" Retries: "+retry_num.to_s
-      Rails.logger.debug(retry_num.to_s + " : " + e.message)
+      #Rails.logger.debug("Error: "+e.message+" Retries: "+retry_num.to_s)
       return self.tvr_api_details(retry_num - 1)
     end
 
@@ -436,17 +460,20 @@ class Show < ActiveRecord::Base
   def image_url
     require 'net/http'
 
-    response = nil
-    show_image = self.tvr_image_url
-    url = URI.parse(show_image)
-    Net::HTTP.start(url.host, url.port) {|http|
-      response = http.head(url.path)
-    }
+    begin
+      response = nil
+      show_image = self.tvr_image_url
+      url = URI.parse(show_image)
+      Net::HTTP.start(url.host, url.port) {|http|
+        response = http.head(url.path)
+      }
 
-    show_image = self.default_image_url if (response == nil or response['content-length'] == nil )
-    
-    return show_image
-  
+      show_image = self.default_image_url if (response == nil or response['content-length'] == nil )
+      
+      return show_image
+    rescue
+      return self.default_image_url
+    end
   end
 
   def tvr_detail_url
@@ -491,6 +518,23 @@ class Show < ActiveRecord::Base
 
     return 'http://images.tvrage.com/shows/' + folder + '/' + img
   
+  end
+
+  def get_download_string (season , episode)
+
+    tvrinfo = self.load_tvr_details
+    clean_name = self.name.dup
+    while clean_name.gsub!(/\([^()]*\)/,""); end
+    string = clean_name
+
+    if  tvrinfo.genres.include? "Anime"
+      string = string + " " + tvrinfo.seasons[season.to_i][episode.to_i-1].full_number.to_s
+    else
+      string = string + " S" + format('%02d', season.to_i)+"E"+format('%02d', episode.to_i)
+    end
+
+    return string
+
   end
   
   def status_string

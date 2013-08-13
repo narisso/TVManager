@@ -49,6 +49,9 @@ gem 'yaml_db'
 #Account management
 gem 'devise'
 
+#TPB
+gem 'the_pirate_bay'
+
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
 

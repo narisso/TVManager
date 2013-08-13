@@ -1,0 +1,33 @@
+<%- model_class = Show -%>
+<div class="page-header">
+  <h1><%=t '.title', :default => @show.name %></h1>
+</div>
+
+<h6><%= 'SEARCH STRING = "'+@downString+'"'  %></h6>
+<h4>The Pirate Bay</h4>
+
+<table class="table table-striped">	
+	<thead>
+		<th> TPB ID </th>
+		<th> Name </th>
+		<th> Seeders </th>
+		<th> Leechers </th>
+		<th> Magnet </th>
+		<th> Size </th>
+		<th> Type </th>
+	</thead>       
+		
+    <tbody>
+    	<%if not @firstTorrent.nil? %>
+    	<tr>
+    		<td><%= link_to @firstTorrent.id , "http://thepiratebay.sx/torrent/"+@firstTorrent.id.to_s %></td>
+			<td><%= @firstTorrent.name%></td>
+			<td><%= @firstTorrent.seeders%></td>
+			<td><%= @firstTorrent.leechers%></td>
+			<td><%= link_to "Magnet" ,@firstTorrent.magnet_uri %></td>
+			<td><%= @firstTorrent.size%></td>
+			<td><%= @firstTorrent.type%></td>
+    	</tr>
+    	<%end%>
+    </tbody>
+</table>

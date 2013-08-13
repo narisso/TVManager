@@ -4,8 +4,24 @@ TVManager::Application.routes.draw do
 
   devise_for :users, :controllers => {:registrations => "registrations"}
 
-  resources :users
-  resources :shows
+  resources :users do 
+    
+    member do
+      put 'add_show'
+    end
+
+  end
+
+  resources :shows do
+   
+    member do
+      get 'imdb_info'
+      get 'tvr_info'
+      get 'download'
+    end
+
+  end
+
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
