@@ -1,0 +1,2 @@
+class CacaController < ApplicationController
+end
